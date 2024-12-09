@@ -116,7 +116,23 @@ var (
 		"smartctl.device-include",
 		"Regexp of devices to exclude from automatic scanning. (mutually exclusive to device-exclude)",
 	).Default("").String()
-	smartctlScanDeviceTypes = kingpin.Flag(
+	smartctlTypeExclude = kingpin.Flag( // TODO(tekert): remove?
+		"smartctl.type-exclude",
+		"Regexp of devices types [ata, nvme, scsi, ...] to exclude from automatic scanning. (mutually exclusive to type-include)",
+	).Default("").String()
+	smartctlTypeInclude = kingpin.Flag( // TODO(tekert): remove?
+		"smartctl.type-include",
+		"Regexp of devices types [ata, nvme, scsi, ...] to exclude from automatic scanning. (mutually exclusive to type-exclude)",
+	).Default("").String()
+	smartctlProtocolExclude = kingpin.Flag( // TODO(tekert): remove?
+		"smartctl.protocol-exclude",
+		"Regexp of protocols [ATA, NVMe, SCSI, ...] to exclude from automatic scanning. (mutually exclusive to protocol-include)",
+	).Default("").String()
+	smartctlProtocolInclude = kingpin.Flag( // TODO(tekert): remove?
+		"smartctl.protocol-include",
+		"Regexp of protocols [ATA, NVMe, SCSI, ...] to exclude from automatic scanning. (mutually exclusive to protocol-exclude)",
+	).Default("").String()
+	smartctlScanDeviceTypes = kingpin.Flag( // TODO(tekert): from upstream, use it?
 		"smartctl.scan-device-type",
 		"Device type to use during automatic scan. Special by-id value forces predictable device names. (repeatable)",
 	).Strings()
@@ -130,7 +146,9 @@ var (
 
 // scanDevices uses smartctl to gather the list of available devices.
 func scanDevices(logger *slog.Logger) []Device {
-	filter := newDeviceFilter(*smartctlDeviceExclude, *smartctlDeviceInclude)
+	filterDevice := newDeviceFilter(*smartctlDeviceExclude, *smartctlDeviceInclude)
+	filterType := newDeviceFilter(*smartctlTypeExclude, *smartctlTypeInclude)
+	filterProtocol := newDeviceFilter(*smartctlProtocolExclude, *smartctlProtocolInclude)
 
 	json := readSMARTctlDevices(logger)
 	scanDevices := json.Get("devices").Array()
@@ -138,6 +156,8 @@ func scanDevices(logger *slog.Logger) []Device {
 	for _, d := range scanDevices {
 		deviceName := d.Get("name").String()
 		deviceType := d.Get("type").String()
+		deviceProtocol := d.Get("protocol").String()
+		//! CHANGE(tekert) add type and protocol to search
 
 		// SATA devices are reported as SCSI during scan - fallback to auto scraping
 		if deviceType == "scsi" {
@@ -145,10 +165,10 @@ func scanDevices(logger *slog.Logger) []Device {
 		}
 
 		deviceLabel := buildDeviceLabel(deviceName, deviceType)
-		if filter.ignored(deviceLabel) {
+		if filterDevice.ignored(deviceLabel) || filterType.ignored(deviceType) || filterProtocol.ignored(deviceProtocol) {
 			logger.Info("Ignoring device", "name", deviceLabel)
 		} else {
-			logger.Info("Found device", "name", deviceLabel)
+			logger.Info("Found device", "name", deviceName, "type", deviceType, "protocol", deviceProtocol)
 			device := Device{
 				Name:  deviceName,
 				Type:  deviceType,
