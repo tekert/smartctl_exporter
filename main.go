@@ -107,6 +107,22 @@ var (
 		"smartctl.device-include",
 		"Regexp of devices to exclude from automatic scanning. (mutually exclusive to device-exclude)",
 	).Default("").String()
+	smartctlTypeExclude = kingpin.Flag(
+		"smartctl.type-exclude",
+		"Regexp of devices types [ata, nvme, scsi, ...] to exclude from automatic scanning. (mutually exclusive to type-include)",
+	).Default("").String()
+	smartctlTypeInclude = kingpin.Flag(
+		"smartctl.type-include",
+		"Regexp of devices types [ata, nvme, scsi, ...] to exclude from automatic scanning. (mutually exclusive to type-exclude)",
+	).Default("").String()
+	smartctlProtocolExclude = kingpin.Flag(
+		"smartctl.protocol-exclude",
+		"Regexp of protocols [ATA, NVMe, SCSI, ...] to exclude from automatic scanning. (mutually exclusive to protocol-include)",
+	).Default("").String()
+	smartctlProtocolInclude = kingpin.Flag(
+		"smartctl.protocol-include",
+		"Regexp of protocols [ATA, NVMe, SCSI, ...] to exclude from automatic scanning. (mutually exclusive to protocol-exclude)",
+	).Default("").String()
 	smartctlFakeData = kingpin.Flag("smartctl.fake-data",
 		"The device to monitor (repeatable)",
 	).Default("false").Hidden().Bool()
@@ -114,17 +130,22 @@ var (
 
 // scanDevices uses smartctl to gather the list of available devices.
 func scanDevices(logger *slog.Logger) []Device {
-	filter := newDeviceFilter(*smartctlDeviceExclude, *smartctlDeviceInclude)
+	filterDevice := newDeviceFilter(*smartctlDeviceExclude, *smartctlDeviceInclude)
+	filterType := newDeviceFilter(*smartctlTypeExclude, *smartctlTypeInclude)
+	filterProtocol := newDeviceFilter(*smartctlProtocolExclude, *smartctlProtocolInclude)
 
 	json := readSMARTctlDevices(logger)
 	scanDevices := json.Get("devices").Array()
 	var scanDeviceResult []Device
 	for _, d := range scanDevices {
 		deviceName := extractDiskName(strings.TrimSpace(d.Get("info_name").String()))
-		if filter.ignored(deviceName) {
-			logger.Info("Ignoring device", "name", deviceName)
+		deviceType := d.Get("type").String()
+		deviceProtocol := d.Get("protocol").String()
+		//! CHANGE(tekert) add type and protocol to search
+		if filterDevice.ignored(deviceName) || filterType.ignored(deviceType) || filterProtocol.ignored(deviceProtocol) {
+			logger.Info("Ignoring device", "name", deviceName, "type", deviceType, "protocol", deviceProtocol)
 		} else {
-			logger.Info("Found device", "name", deviceName)
+			logger.Info("Found device", "name", deviceName, "type", deviceType, "protocol", deviceProtocol)
 			device := Device{
 				Name:      d.Get("name").String(),
 				Info_Name: deviceName,
