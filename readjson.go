@@ -63,6 +63,9 @@ func readFakeSMARTctl(logger *slog.Logger, device Device) gjson.Result {
 // Get json from smartctl and parse it
 func readSMARTctl(logger *slog.Logger, device Device) (gjson.Result, bool) {
 	start := time.Now()
+	// !NOTA(Tekert): el self test en smartctrl 7.4 ahora requiere "-t short" o "-t long" para iniciar,
+	//      uno tarda 2m y el otro ~220m con smartctl -c /dev/sdc por ej, se puede saber que tipos de test soporta
+	//		el --log=selftest es para ver los logs, no para iniciarlos, es bueno dejarlo y que reporte en metricas los resultados manuales.
 	out, err := exec.Command(*smartctlPath, "--json", "--info", "--health", "--attributes", "--tolerance=verypermissive", "--nocheck=standby", "--format=brief", "--log=error", "--log=selftest", "--device="+device.Type, device.Name).Output()
 	if err != nil {
 		logger.Warn("S.M.A.R.T. output reading", "err", err, "device", device.Info_Name)

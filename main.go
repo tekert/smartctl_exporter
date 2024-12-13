@@ -105,7 +105,7 @@ var (
 	).Default("").String()
 	smartctlDeviceInclude = kingpin.Flag(
 		"smartctl.device-include",
-		"Regexp of devices to exclude from automatic scanning. (mutually exclusive to device-exclude)",
+		"Regexp of devices to include from automatic scanning. (mutually exclusive to device-exclude)",
 	).Default("").String()
 	smartctlTypeExclude = kingpin.Flag(
 		"smartctl.type-exclude",
@@ -113,7 +113,7 @@ var (
 	).Default("").String()
 	smartctlTypeInclude = kingpin.Flag(
 		"smartctl.type-include",
-		"Regexp of devices types [ata, nvme, scsi, ...] to exclude from automatic scanning. (mutually exclusive to type-exclude)",
+		"Regexp of devices types [ata, nvme, scsi, ...] to include from automatic scanning. (mutually exclusive to type-exclude)",
 	).Default("").String()
 	smartctlProtocolExclude = kingpin.Flag(
 		"smartctl.protocol-exclude",
@@ -121,7 +121,7 @@ var (
 	).Default("").String()
 	smartctlProtocolInclude = kingpin.Flag(
 		"smartctl.protocol-include",
-		"Regexp of protocols [ATA, NVMe, SCSI, ...] to exclude from automatic scanning. (mutually exclusive to protocol-exclude)",
+		"Regexp of protocols [ATA, NVMe, SCSI, ...] to include from automatic scanning. (mutually exclusive to protocol-exclude)",
 	).Default("").String()
 	smartctlFakeData = kingpin.Flag("smartctl.fake-data",
 		"The device to monitor (repeatable)",
