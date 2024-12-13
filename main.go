@@ -114,7 +114,7 @@ var (
 	).Default("").String()
 	smartctlDeviceInclude = kingpin.Flag(
 		"smartctl.device-include",
-		"Regexp of devices to exclude from automatic scanning. (mutually exclusive to device-exclude)",
+		"Regexp of devices to include from automatic scanning. (mutually exclusive to device-exclude)",
 	).Default("").String()
 	smartctlTypeExclude = kingpin.Flag( // TODO(tekert): remove?
 		"smartctl.type-exclude",
@@ -122,7 +122,7 @@ var (
 	).Default("").String()
 	smartctlTypeInclude = kingpin.Flag( // TODO(tekert): remove?
 		"smartctl.type-include",
-		"Regexp of devices types [ata, nvme, scsi, ...] to exclude from automatic scanning. (mutually exclusive to type-exclude)",
+		"Regexp of devices types [ata, nvme, scsi, ...] to include from automatic scanning. (mutually exclusive to type-exclude)",
 	).Default("").String()
 	smartctlProtocolExclude = kingpin.Flag( // TODO(tekert): remove?
 		"smartctl.protocol-exclude",
@@ -130,7 +130,7 @@ var (
 	).Default("").String()
 	smartctlProtocolInclude = kingpin.Flag( // TODO(tekert): remove?
 		"smartctl.protocol-include",
-		"Regexp of protocols [ATA, NVMe, SCSI, ...] to exclude from automatic scanning. (mutually exclusive to protocol-exclude)",
+		"Regexp of protocols [ATA, NVMe, SCSI, ...] to include from automatic scanning. (mutually exclusive to protocol-exclude)",
 	).Default("").String()
 	smartctlScanDeviceTypes = kingpin.Flag( // TODO(tekert): from upstream, use it?
 		"smartctl.scan-device-type",
